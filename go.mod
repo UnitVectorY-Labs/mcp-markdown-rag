@@ -1,6 +1,6 @@
 module github.com/UnitVectorY-Labs/mcp-markdown-rag
 
-go 1.24.5
+go 1.24.5 // GOVERSION
 
 require github.com/philippgille/chromem-go v0.7.0
 
