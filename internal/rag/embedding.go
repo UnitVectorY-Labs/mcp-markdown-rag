@@ -27,8 +27,16 @@ type OllamaEmbeddingResponse struct {
 	Embedding []float32 `json:"embedding"`
 }
 
-// GetEmbedding gets embedding from Ollama API
+// GetEmbedding gets embedding using the configured mode (local or Ollama)
 func GetEmbedding(text string, config Config) ([]float32, error) {
+	if config.EmbeddingMode == EmbeddingModeLocal {
+		return GetLocalEmbedding(text)
+	}
+	return getOllamaEmbedding(text, config)
+}
+
+// getOllamaEmbedding gets embedding from Ollama API
+func getOllamaEmbedding(text string, config Config) ([]float32, error) {
 	reqBody := OllamaEmbeddingRequest{
 		Model:  config.EmbeddingModel,
 		Prompt: text,
@@ -59,6 +67,11 @@ func BatchEmbedChunks(chunks []DocumentChunk, config Config) (map[string][]float
 	embeddings := make(map[string][]float32)
 	batchSize := 10 // Process 10 chunks at a time
 	maxRetries := 3
+
+	// Local mode doesn't need retries since it's in-process
+	if config.EmbeddingMode == EmbeddingModeLocal {
+		maxRetries = 1
+	}
 
 	fmt.Printf("Processing %d chunks in batches of %d\n", len(chunks), batchSize)
 
@@ -96,8 +109,8 @@ func BatchEmbedChunks(chunks []DocumentChunk, config Config) (map[string][]float
 			embeddings[chunk.ID] = embedding
 		}
 
-		// Small delay between batches to be nice to the API
-		if end < len(chunks) {
+		// Small delay between batches for Ollama mode
+		if config.EmbeddingMode != EmbeddingModeLocal && end < len(chunks) {
 			time.Sleep(100 * time.Millisecond)
 		}
 	}
