@@ -10,6 +10,11 @@ import (
 const (
 	// LocalEmbeddingDimension is the dimensionality of the local embedding vectors
 	LocalEmbeddingDimension = 384
+
+	// Weights for different feature types in the embedding
+	ngramWeight          = 0.3 // Weight for character n-gram features
+	bigramWeight         = 0.5 // Weight for word bigram features
+	secondaryBucketWeight = 0.5 // Weight for secondary hash bucket
 )
 
 // GetLocalEmbedding generates a vector embedding for text using a self-contained
@@ -44,8 +49,8 @@ func GetLocalEmbedding(text string) ([]float32, error) {
 		if len(term) >= 3 {
 			for i := 0; i <= len(term)-3; i++ {
 				ngram := term[i : i+3]
-				ngramWeight := weight * 0.3 // Lower weight for n-grams
-				addTermToVector(vector, "#"+ngram+"#", ngramWeight)
+				ngramW := weight * ngramWeight
+				addTermToVector(vector, "#"+ngram+"#", ngramW)
 			}
 		}
 	}
@@ -53,7 +58,7 @@ func GetLocalEmbedding(text string) ([]float32, error) {
 	// Also add bigram features for phrase matching
 	for i := 0; i < len(tokens)-1; i++ {
 		bigram := tokens[i] + "_" + tokens[i+1]
-		addTermToVector(vector, bigram, 0.5)
+		addTermToVector(vector, bigram, bigramWeight)
 	}
 
 	// L2 normalize the vector
@@ -87,9 +92,9 @@ func addTermToVector(vector []float64, term string, weight float64) {
 	idx2 := h2 % uint64(len(vector))
 	h3 := hashString(term, 2)
 	if h3%2 == 0 {
-		vector[idx2] += weight * 0.5
+		vector[idx2] += weight * secondaryBucketWeight
 	} else {
-		vector[idx2] -= weight * 0.5
+		vector[idx2] -= weight * secondaryBucketWeight
 	}
 }
 

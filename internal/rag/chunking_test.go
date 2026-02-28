@@ -96,7 +96,7 @@ func TestGetHeadingContext(t *testing.T) {
 func TestEstimateTokenCount(t *testing.T) {
 	text := "Hello world" // 11 chars
 	tokens := EstimateTokenCount(text, 0.25)
-	expected := 2 // 11 * 0.25 = 2.75, truncated to 2
+	expected := 2 // int(11 * 0.25) = int(2.75) = 2
 	if tokens != expected {
 		t.Errorf("expected %d tokens, got %d", expected, tokens)
 	}
