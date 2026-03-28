@@ -28,11 +28,12 @@ func main() {
 	var dbPath = flag.String("db", "", "Path to database file (default: ./rag.db)")
 	var ollamaURL = flag.String("ollama-url", "", "Ollama API URL (default: http://localhost:11434/api/embeddings)")
 	var embeddingModel = flag.String("embedding-model", "", "Embedding model name (default: nomic-embed-text)")
+	var embeddingMode = flag.String("embedding-mode", "", "Embedding mode: 'local' (default, self-contained) or 'ollama' (requires Ollama)")
 	var mcpMode = flag.Bool("mcp", false, "Run as MCP server")
 
 	flag.Parse()
 
-	config := rag.GetConfig(ollamaURL, embeddingModel, dbPath, DefaultOllamaURL, DefaultEmbeddingModel, DefaultDBPath)
+	config := rag.GetConfig(ollamaURL, embeddingModel, dbPath, embeddingMode, DefaultOllamaURL, DefaultEmbeddingModel, DefaultDBPath)
 
 	// MCP mode takes precedence
 	if *mcpMode {
