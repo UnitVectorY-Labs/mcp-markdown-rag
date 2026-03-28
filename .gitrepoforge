@@ -1,0 +1,13 @@
+name: mcp-markdown-rag
+default_branch: main
+config:
+  description: "A local-first command-line tool for indexing and semantically searching Markdown documents using vector embeddings and a self-contained vector database."
+  license: MIT
+  language: go
+  release: release-go
+  justfile: true
+  codecov: true
+  docs:
+    enabled: false
+  gitignore:
+    - rag.db
