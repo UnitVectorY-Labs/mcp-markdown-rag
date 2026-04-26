@@ -4,7 +4,7 @@ go 1.26 // GOVERSION
 
 require github.com/philippgille/chromem-go v0.7.0
 
-require github.com/mark3labs/mcp-go v0.48.0
+require github.com/mark3labs/mcp-go v0.49.0
 
 require (
 	github.com/google/jsonschema-go v0.4.2 // indirect
