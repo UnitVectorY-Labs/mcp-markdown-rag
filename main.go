@@ -2,7 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"runtime"
+	"strconv"
+	"strings"
 
 	"github.com/UnitVectorY-Labs/mcp-markdown-rag/internal/rag"
 )
@@ -11,6 +15,7 @@ const (
 	DefaultOllamaURL      = "http://localhost:11434/api/embeddings"
 	DefaultEmbeddingModel = "nomic-embed-text"
 	DefaultDBPath         = "./rag.db"
+	ProjectName           = "mcp-markdown-rag"
 
 	// Chunking configuration
 	MaxTokensPerChunk   = 4000 // Maximum tokens per chunk
@@ -18,6 +23,38 @@ const (
 	MaxContextTokens    = 8000 // Context window limit for nomic-embed-text
 	ApproxTokensPerChar = 0.25 // Rough approximation: 4 chars per token
 )
+
+// Version is the application version, injected at build time via ldflags.
+var Version = "dev"
+
+func isSemverRelease(version string) bool {
+	normalized := strings.TrimPrefix(version, "v")
+	mainAndBuild := strings.SplitN(normalized, "+", 2)
+	mainAndPre := strings.SplitN(mainAndBuild[0], "-", 2)
+	parts := strings.Split(mainAndPre[0], ".")
+	if len(parts) != 3 {
+		return false
+	}
+
+	for _, part := range parts {
+		if part == "" {
+			return false
+		}
+		if _, err := strconv.Atoi(part); err != nil {
+			return false
+		}
+	}
+
+	return true
+}
+
+func buildVersionOutput(projectName, version string) string {
+	normalized := version
+	if isSemverRelease(normalized) && !strings.HasPrefix(normalized, "v") {
+		normalized = "v" + normalized
+	}
+	return fmt.Sprintf("%s version %s (%s, %s/%s)", projectName, normalized, runtime.Version(), runtime.GOOS, runtime.GOARCH)
+}
 
 func main() {
 	var indexPath = flag.String("index", "", "Path to folder to recursively index .md files")
@@ -29,8 +66,14 @@ func main() {
 	var ollamaURL = flag.String("ollama-url", "", "Ollama API URL (default: http://localhost:11434/api/embeddings)")
 	var embeddingModel = flag.String("embedding-model", "", "Embedding model name (default: nomic-embed-text)")
 	var mcpMode = flag.Bool("mcp", false, "Run as MCP server")
+	var version = flag.Bool("version", false, "Show version")
 
 	flag.Parse()
+
+	if *version {
+		fmt.Println(buildVersionOutput(ProjectName, Version))
+		return
+	}
 
 	config := rag.GetConfig(ollamaURL, embeddingModel, dbPath, DefaultOllamaURL, DefaultEmbeddingModel, DefaultDBPath)
 
