@@ -27,7 +27,7 @@ const (
 var Version = "dev"
 
 func isSemverRelease(version string) bool {
-	parts := strings.Split(version, ".")
+	parts := strings.Split(strings.TrimPrefix(version, "v"), ".")
 	if len(parts) < 3 {
 		return false
 	}
