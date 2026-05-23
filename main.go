@@ -27,12 +27,16 @@ const (
 var Version = "dev"
 
 func isSemverRelease(version string) bool {
-	parts := strings.Split(strings.TrimPrefix(version, "v"), ".")
+	normalized := strings.TrimPrefix(version, "v")
+	mainAndBuild := strings.SplitN(normalized, "+", 2)
+	mainAndPre := strings.SplitN(mainAndBuild[0], "-", 2)
+	parts := strings.Split(mainAndPre[0], ".")
 	if len(parts) < 3 {
 		return false
 	}
 
-	for _, part := range parts[:3] {
+	for i := 0; i < 3; i++ {
+		part := parts[i]
 		if part == "" {
 			return false
 		}
