@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/UnitVectorY-Labs/mcp-markdown-rag/internal/rag"
@@ -31,19 +32,16 @@ func isSemverRelease(version string) bool {
 	mainAndBuild := strings.SplitN(normalized, "+", 2)
 	mainAndPre := strings.SplitN(mainAndBuild[0], "-", 2)
 	parts := strings.Split(mainAndPre[0], ".")
-	if len(parts) < 3 {
+	if len(parts) != 3 {
 		return false
 	}
 
-	for i := 0; i < 3; i++ {
-		part := parts[i]
+	for _, part := range parts {
 		if part == "" {
 			return false
 		}
-		for _, char := range part {
-			if char < '0' || char > '9' {
-				return false
-			}
+		if _, err := strconv.Atoi(part); err != nil {
+			return false
 		}
 	}
 

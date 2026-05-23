@@ -41,3 +41,12 @@ func TestBuildVersionOutputAddsVPrefixForPrerelease(t *testing.T) {
 		t.Fatalf("unexpected version output: got %q, want %q", got, want)
 	}
 }
+
+func TestBuildVersionOutputNoVPrefixForNonSemver(t *testing.T) {
+	got := buildVersionOutput(ProjectName, "1.2.3.4")
+	want := fmt.Sprintf("%s version 1.2.3.4 (%s, %s/%s)", ProjectName, runtime.Version(), runtime.GOOS, runtime.GOARCH)
+
+	if got != want {
+		t.Fatalf("unexpected version output: got %q, want %q", got, want)
+	}
+}
