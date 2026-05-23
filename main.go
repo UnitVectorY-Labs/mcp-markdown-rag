@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"regexp"
 	"runtime"
 	"strings"
 
@@ -27,11 +26,29 @@ const (
 // Version is the application version, injected at build time via ldflags.
 var Version = "dev"
 
-var semverRe = regexp.MustCompile(`^\d+\.\d+\.\d+`)
+func isSemverRelease(version string) bool {
+	parts := strings.Split(version, ".")
+	if len(parts) < 3 {
+		return false
+	}
+
+	for _, part := range parts[:3] {
+		if part == "" {
+			return false
+		}
+		for _, char := range part {
+			if char < '0' || char > '9' {
+				return false
+			}
+		}
+	}
+
+	return true
+}
 
 func buildVersionOutput(projectName, version string) string {
 	normalized := version
-	if semverRe.MatchString(normalized) && !strings.HasPrefix(normalized, "v") {
+	if isSemverRelease(normalized) && !strings.HasPrefix(normalized, "v") {
 		normalized = "v" + normalized
 	}
 	return fmt.Sprintf("%s version %s (%s, %s/%s)", projectName, normalized, runtime.Version(), runtime.GOOS, runtime.GOARCH)
