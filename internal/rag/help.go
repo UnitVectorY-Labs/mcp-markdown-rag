@@ -20,6 +20,7 @@ func ShowHelp(maxTokensPerChunk, chunkOverlapPercent, maxContextTokens int) {
 	fmt.Println("  -ollama-url <url>          Ollama API URL (default: http://localhost:11434/api/embeddings)")
 	fmt.Println("  -embedding-model <model>   Embedding model name (default: nomic-embed-text)")
 	fmt.Println("  -mcp                       Run as MCP server (enables MCP protocol endpoints)")
+	fmt.Println("  -version                   Show version")
 	fmt.Println("  -help                      Show this help message")
 	fmt.Println()
 	fmt.Println("Environment Variables:")
