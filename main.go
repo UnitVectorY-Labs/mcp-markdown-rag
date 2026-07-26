@@ -65,7 +65,9 @@ func main() {
 	var dbPath = flag.String("db", "", "Path to database file (default: ./rag.db)")
 	var ollamaURL = flag.String("ollama-url", "", "Ollama API URL (default: http://localhost:11434/api/embeddings)")
 	var embeddingModel = flag.String("embedding-model", "", "Embedding model name (default: nomic-embed-text)")
-	var mcpMode = flag.Bool("mcp", false, "Run as MCP server")
+	var mcpMode = flag.Bool("mcp", false, "Run as MCP server over STDIO")
+	var sseMode = flag.Bool("sse", false, "Run as MCP server over HTTP with SSE transport")
+	var sseAddr = flag.String("sse-addr", ":8080", "Address to listen on for SSE server (default: :8080)")
 	var version = flag.Bool("version", false, "Show version")
 
 	flag.Parse()
@@ -77,7 +79,16 @@ func main() {
 
 	config := rag.GetConfig(ollamaURL, embeddingModel, dbPath, DefaultOllamaURL, DefaultEmbeddingModel, DefaultDBPath)
 
-	// MCP mode takes precedence
+	// SSE mode
+	if *sseMode {
+		err := rag.RunSSEServer(config, *sseAddr)
+		if err != nil {
+			log.Fatalf("MCP SSE Server error: %v", err)
+		}
+		return
+	}
+
+	// MCP STDIO mode takes precedence
 	if *mcpMode {
 		err := rag.RunMCPServer(config)
 		if err != nil {

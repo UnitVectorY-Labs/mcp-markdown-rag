@@ -3,6 +3,8 @@ package rag
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"sort"
 	"strconv"
@@ -53,8 +55,8 @@ type RAGRetrieveOutput struct {
 	Result string `json:"result" jsonschema:"formatted file content"`
 }
 
-// RunMCPServer starts the MCP server with RAG tools
-func RunMCPServer(config Config) error {
+// newMCPServer creates and configures the MCP server with RAG tools.
+func newMCPServer(config Config) *mcp.Server {
 	s := mcp.NewServer(&mcp.Implementation{Name: "Markdown RAG Server", Version: "1.0.0"}, nil)
 
 	mcp.AddTool(s, &mcp.Tool{
@@ -104,7 +106,10 @@ func RunMCPServer(config Config) error {
 		response.WriteString("Use the `rag_retrieve` tool to get the actual content from specific files and ranges.\n")
 		response.WriteString("Example: `rag_retrieve` with `file_path` and optionally `start_offset` and `end_offset`\n")
 
-		return nil, RAGSearchOutput{Result: response.String()}, nil
+		text := response.String()
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{&mcp.TextContent{Text: text}},
+		}, RAGSearchOutput{Result: text}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
@@ -141,10 +146,29 @@ func RunMCPServer(config Config) error {
 		response.WriteString(content)
 		response.WriteString("\n```")
 
-		return nil, RAGRetrieveOutput{Result: response.String()}, nil
+		text := response.String()
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{&mcp.TextContent{Text: text}},
+		}, RAGRetrieveOutput{Result: text}, nil
 	})
 
+	return s
+}
+
+// RunMCPServer starts the MCP server over STDIO transport.
+func RunMCPServer(config Config) error {
+	s := newMCPServer(config)
 	return s.Run(context.Background(), &mcp.StdioTransport{})
+}
+
+// RunSSEServer starts the MCP server over HTTP with SSE transport.
+func RunSSEServer(config Config, addr string) error {
+	s := newMCPServer(config)
+	handler := mcp.NewSSEHandler(func(_ *http.Request) *mcp.Server {
+		return s
+	}, nil)
+	log.Printf("MCP SSE server listening on %s", addr)
+	return http.ListenAndServe(addr, handler)
 }
 
 // MCPSearchDocumentsWithResults searches for documents and returns structured results for MCP
