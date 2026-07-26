@@ -63,10 +63,7 @@ func BatchEmbedChunks(chunks []DocumentChunk, config Config) (map[string][]float
 	fmt.Printf("Processing %d chunks in batches of %d\n", len(chunks), batchSize)
 
 	for i := 0; i < len(chunks); i += batchSize {
-		end := i + batchSize
-		if end > len(chunks) {
-			end = len(chunks)
-		}
+		end := min(i+batchSize, len(chunks))
 
 		batch := chunks[i:end]
 		fmt.Printf("Processing batch %d/%d (%d chunks)\n",
@@ -77,7 +74,7 @@ func BatchEmbedChunks(chunks []DocumentChunk, config Config) (map[string][]float
 			var embedding []float32
 			var err error
 
-			for retry := 0; retry < maxRetries; retry++ {
+			for retry := range maxRetries {
 				embedding, err = GetEmbedding(chunk.Content, config)
 				if err == nil {
 					break

@@ -241,20 +241,14 @@ func MCPRetrieveFileContent(filePath string, startOffset, endOffset *int) (strin
 	end := contentLen
 
 	if startOffset != nil {
-		start = *startOffset
-		if start < 0 {
-			start = 0
-		}
+		start = max(*startOffset, 0)
 		if start > contentLen {
 			start = contentLen
 		}
 	}
 
 	if endOffset != nil {
-		end = *endOffset
-		if end < 0 {
-			end = 0
-		}
+		end = max(*endOffset, 0)
 		if end > contentLen {
 			end = contentLen
 		}

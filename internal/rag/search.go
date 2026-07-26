@@ -3,6 +3,7 @@ package rag
 import (
 	"context"
 	"fmt"
+	"maps"
 	"os"
 
 	"github.com/philippgille/chromem-go"
@@ -153,9 +154,7 @@ func MCPSearchDocuments(queryText string, config Config) (*MCPSearchResult, erro
 
 	// Create metadata map
 	metadata := make(map[string]string)
-	for k, v := range result.Metadata {
-		metadata[k] = v
-	}
+	maps.Copy(metadata, result.Metadata)
 
 	return &MCPSearchResult{
 		Content:    result.Content,
