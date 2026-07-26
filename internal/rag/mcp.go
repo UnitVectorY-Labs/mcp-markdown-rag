@@ -162,6 +162,8 @@ func RunMCPServer(config Config) error {
 }
 
 // RunSSEServer starts the MCP server over HTTP with SSE transport.
+// A single mcp.Server instance is shared across all SSE connections; the SDK
+// manages per-connection state via ServerSession and is safe for concurrent use.
 func RunSSEServer(config Config, addr string) error {
 	s := newMCPServer(config)
 	handler := mcp.NewSSEHandler(func(_ *http.Request) *mcp.Server {

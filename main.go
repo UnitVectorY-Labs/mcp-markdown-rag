@@ -88,7 +88,7 @@ func main() {
 		return
 	}
 
-	// MCP STDIO mode takes precedence
+	// MCP STDIO mode
 	if *mcpMode {
 		err := rag.RunMCPServer(config)
 		if err != nil {
