@@ -60,7 +60,7 @@ func RunMCPServer(config Config) error {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "rag_search",
 		Description: "Search for relevant documentation using RAG (Retrieval-Augmented Generation). Returns a list of files with relevant chunks and their locations.",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input RAGSearchInput) (
+	}, func(_ context.Context, _ *mcp.CallToolRequest, input RAGSearchInput) (
 		*mcp.CallToolResult, RAGSearchOutput, error,
 	) {
 		maxResults := 10
@@ -70,10 +70,7 @@ func RunMCPServer(config Config) error {
 
 		results, err := MCPSearchDocumentsWithResults(input.Query, config, maxResults)
 		if err != nil {
-			return &mcp.CallToolResult{
-				Content: []mcp.Content{&mcp.TextContent{Text: fmt.Sprintf("Search failed: %v", err)}},
-				IsError: true,
-			}, RAGSearchOutput{}, nil
+			return nil, RAGSearchOutput{}, fmt.Errorf("search failed: %w", err)
 		}
 
 		fileResults := groupResultsByFile(results)
@@ -113,15 +110,12 @@ func RunMCPServer(config Config) error {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "rag_retrieve",
 		Description: "Retrieve specific content from a file, optionally specifying start and end positions for chunked content.",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input RAGRetrieveInput) (
+	}, func(_ context.Context, _ *mcp.CallToolRequest, input RAGRetrieveInput) (
 		*mcp.CallToolResult, RAGRetrieveOutput, error,
 	) {
 		content, err := MCPRetrieveFileContent(input.FilePath, input.StartOffset, input.EndOffset)
 		if err != nil {
-			return &mcp.CallToolResult{
-				Content: []mcp.Content{&mcp.TextContent{Text: fmt.Sprintf("Retrieval failed: %v", err)}},
-				IsError: true,
-			}, RAGRetrieveOutput{}, nil
+			return nil, RAGRetrieveOutput{}, fmt.Errorf("retrieval failed: %w", err)
 		}
 
 		var response strings.Builder
